@@ -8,12 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.web.servlet.ConditionalOnMissingFilterBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -22,7 +20,6 @@ import java.util.List;
 
 import static com.epam.esm.utils.AuthConstants.AUTHENTICATION_BEARER_TOKEN;
 
-@Component
 @RequiredArgsConstructor
 public class ServiceAuthenticationFilter extends OncePerRequestFilter {
     private final AuthFeignClient authClient;

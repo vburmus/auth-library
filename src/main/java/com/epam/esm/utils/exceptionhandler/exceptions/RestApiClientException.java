@@ -1,4 +1,4 @@
-package com.vburmus.auth.utils.exceptionhandler.exceptions;
+package com.epam.esm.utils.exceptionhandler.exceptions;
 
 public class RestApiClientException extends RuntimeException {
     public RestApiClientException(String message) {
