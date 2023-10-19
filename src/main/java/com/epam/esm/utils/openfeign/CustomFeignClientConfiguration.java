@@ -4,23 +4,30 @@ import com.epam.esm.utils.exceptionhandler.exceptions.RestApiClientException;
 import com.epam.esm.utils.exceptionhandler.exceptions.RestApiServerException;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
+import feign.form.ContentType;
+import feign.form.MultipartFormContentProcessor;
 import feign.form.spring.SpringFormEncoder;
-import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import feign.form.spring.SpringManyMultipartFilesWriter;
+import feign.form.spring.SpringSingleMultipartFileWriter;
 import org.springframework.cloud.openfeign.support.JsonFormWriter;
-import org.springframework.cloud.openfeign.support.SpringEncoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.RestTemplate;
 
 import static com.epam.esm.utils.AuthConstants.*;
 
 @Import(JsonFormWriter.class)
 public class CustomFeignClientConfiguration {
 
+
     @Bean
-    public Encoder multipartFormEncoder() {
-        return new SpringFormEncoder(new SpringEncoder(() -> new HttpMessageConverters(new RestTemplate().getMessageConverters())));
+    Encoder feignEncoder(JsonFormWriter jsonFormWriter) {
+        return new SpringFormEncoder() {{
+            var processor = (MultipartFormContentProcessor) getContentProcessor(ContentType.MULTIPART);
+            processor.addFirstWriter(jsonFormWriter);
+            processor.addFirstWriter(new SpringSingleMultipartFileWriter());
+            processor.addFirstWriter(new SpringManyMultipartFilesWriter());
+        }};
     }
 
     @Bean
