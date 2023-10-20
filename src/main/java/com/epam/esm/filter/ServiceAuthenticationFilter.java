@@ -9,10 +9,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -33,10 +36,16 @@ public class ServiceAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        String role = authClient.getRole(bearerToken).getBody();
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(null, null, List.of(new SimpleGrantedAuthority(role)));
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-        filterChain.doFilter(request, response);
+        try {
+            String role = authClient.getRole(bearerToken).getBody();
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(null, null, List.of(new SimpleGrantedAuthority(role)));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+            filterChain.doFilter(request, response);
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            response.setStatus(e.getStatusCode().value());
+            response.getWriter().write(e.getMessage());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        }
     }
 }

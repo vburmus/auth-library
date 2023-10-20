@@ -33,13 +33,12 @@ public class CustomFeignClientConfiguration {
     @Bean
     public ErrorDecoder errorDecoder() {
         return (methodKey, response) -> {
-            String requestUrl = response.request().url();
             HttpStatus responseStatus = HttpStatus.valueOf(response.status());
             if (responseStatus.is5xxServerError()) {
                 return new HttpServerErrorException(responseStatus,
                         AN_INTERNAL_SERVER_ERROR_OCCURRED_WHILE_PROCESSING_THE_REQUEST);
             } else if (responseStatus.is4xxClientError()) {
-                return new HttpClientErrorException(responseStatus, ERROR_WHILE_MAKING_API_CALL_TO + requestUrl);
+                return new HttpClientErrorException(responseStatus, response.body().toString());
             } else {
                 return new Exception(GENERIC_EXCEPTION);
             }
