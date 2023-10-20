@@ -33,7 +33,7 @@ public class ServiceAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        String role = authClient.getRole(bearerToken);
+        String role = authClient.getRole(bearerToken).getBody();
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(null, null, List.of(new SimpleGrantedAuthority(role)));
         SecurityContextHolder.getContext().setAuthentication(authToken);
