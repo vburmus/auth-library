@@ -2,6 +2,7 @@ package com.epam.esm.filter;
 
 
 import com.epam.esm.utils.openfeign.AuthFeignClient;
+import com.thoughtworks.xstream.io.json.JsonWriter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,9 +44,7 @@ public class ServiceAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authToken);
             filterChain.doFilter(request, response);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            response.setStatus(e.getStatusCode().value());
-            response.getWriter().write(e.getMessage());
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.sendError(e.getStatusCode().value(),e.getMessage());
         }
     }
 }
