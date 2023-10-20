@@ -1,13 +1,13 @@
 package com.epam.esm.utils.exceptionhandler;
 
-import com.epam.esm.utils.exceptionhandler.exceptions.RestApiServerException;
-import com.epam.esm.utils.exceptionhandler.exceptions.RestApiClientException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.zalando.problem.Problem;
 import org.zalando.problem.Status;
 
@@ -16,16 +16,17 @@ import static com.epam.esm.utils.AuthConstants.INTERNAL_SERVER_ERROR;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
-public class RestExceptionHandler {
-    @ExceptionHandler(RestApiClientException.class)
-    public ResponseEntity<Problem> handleRestApiClientException(RestApiClientException e) {
-        Problem problem = buildProblem(Status.BAD_REQUEST, API_CALL_ERROR, e.getMessage());
+public class FeignExceptionHandler {
+    @ExceptionHandler(HttpClientErrorException.class)
+    public ResponseEntity<Problem> handleRestApiClientException(HttpClientErrorException e) {
+        Problem problem = buildProblem(Status.valueOf(e.getStatusCode().value()), API_CALL_ERROR, e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
     }
 
-    @ExceptionHandler(RestApiServerException.class)
-    public ResponseEntity<Problem> handleRestApiServerException(RestApiServerException e) {
-        Problem problem = buildProblem(Status.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR, e.getMessage());
+    @ExceptionHandler(HttpServerErrorException.class)
+    public ResponseEntity<Problem> handleRestApiServerException(HttpServerErrorException e) {
+        Problem problem = buildProblem(Status.valueOf(e.getStatusCode().value()), INTERNAL_SERVER_ERROR,
+                e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
     }
 

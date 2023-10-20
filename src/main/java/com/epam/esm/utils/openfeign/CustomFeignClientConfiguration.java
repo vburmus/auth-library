@@ -1,7 +1,5 @@
 package com.epam.esm.utils.openfeign;
 
-import com.epam.esm.utils.exceptionhandler.exceptions.RestApiClientException;
-import com.epam.esm.utils.exceptionhandler.exceptions.RestApiServerException;
 import feign.codec.Encoder;
 import feign.codec.ErrorDecoder;
 import feign.form.ContentType;
@@ -13,6 +11,8 @@ import org.springframework.cloud.openfeign.support.JsonFormWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import static com.epam.esm.utils.AuthConstants.*;
 
@@ -36,9 +36,10 @@ public class CustomFeignClientConfiguration {
             String requestUrl = response.request().url();
             HttpStatus responseStatus = HttpStatus.valueOf(response.status());
             if (responseStatus.is5xxServerError()) {
-                return new RestApiServerException(AN_INTERNAL_SERVER_ERROR_OCCURRED_WHILE_PROCESSING_THE_REQUEST);
+                return new HttpServerErrorException(responseStatus,
+                        AN_INTERNAL_SERVER_ERROR_OCCURRED_WHILE_PROCESSING_THE_REQUEST);
             } else if (responseStatus.is4xxClientError()) {
-                return new RestApiClientException(ERROR_WHILE_MAKING_API_CALL_TO + requestUrl);
+                return new HttpClientErrorException(responseStatus, ERROR_WHILE_MAKING_API_CALL_TO + requestUrl);
             } else {
                 return new Exception(GENERIC_EXCEPTION);
             }
