@@ -2,13 +2,13 @@ package com.epam.esm.filter;
 
 
 import com.epam.esm.utils.openfeign.AuthFeignClient;
-import com.thoughtworks.xstream.io.json.JsonWriter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.json.JSONObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -44,7 +44,16 @@ public class ServiceAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authToken);
             filterChain.doFilter(request, response);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            response.sendError(e.getStatusCode().value(),e.getMessage());
+            int statusCode = e.getStatusCode().value();
+
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("title", "Authentication Exception");
+            errorJson.put("status", statusCode);
+            errorJson.put("detail", e.getStatusText());
+
+            response.setStatus(statusCode);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getWriter().write(errorJson.toString());
         }
     }
 }

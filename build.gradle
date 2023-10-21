@@ -22,6 +22,7 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:4.0.3'
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.0.4'
     implementation 'org.zalando:problem-spring-web:0.27.0'
+    implementation 'org.json:json:20231013'
 }
 
 publishing {
