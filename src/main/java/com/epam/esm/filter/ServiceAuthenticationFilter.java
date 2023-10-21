@@ -1,6 +1,7 @@
 package com.epam.esm.filter;
 
 
+import com.epam.esm.model.UserDTO;
 import com.epam.esm.utils.openfeign.AuthFeignClient;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,7 +21,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collections;
 
 import static com.epam.esm.utils.AuthConstants.AUTHENTICATION_BEARER_TOKEN;
 
@@ -38,9 +39,10 @@ public class ServiceAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         try {
-            String role = authClient.getRole(bearerToken).getBody();
+            UserDTO user = authClient.getUserFromJwt(bearerToken).getBody();
             UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(null, null, List.of(new SimpleGrantedAuthority(role)));
+                    new UsernamePasswordAuthenticationToken(user, null,
+                            Collections.singleton(new SimpleGrantedAuthority(user.getRole().name())));
             SecurityContextHolder.getContext().setAuthentication(authToken);
             filterChain.doFilter(request, response);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
