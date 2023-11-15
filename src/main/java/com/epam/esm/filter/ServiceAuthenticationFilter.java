@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -47,15 +48,17 @@ public class ServiceAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             int statusCode = e.getStatusCode().value();
-
-            JSONObject errorJson = new JSONObject();
-            errorJson.put("title", "Authentication Exception");
-            errorJson.put("status", statusCode);
-            errorJson.put("detail", e.getStatusText());
-
             response.setStatus(statusCode);
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.getWriter().write(errorJson.toString());
+            response.getWriter().write(getJsonProblem(e, statusCode));
         }
+    }
+
+    public String getJsonProblem(HttpStatusCodeException e, int statusCode) {
+        JSONObject errorJson = new JSONObject();
+        errorJson.put("title", "Authentication Exception");
+        errorJson.put("status", statusCode);
+        errorJson.put("detail", e.getStatusText());
+        return errorJson.toString();
     }
 }
