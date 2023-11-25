@@ -24,7 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
-import static com.epam.esm.utils.AuthConstants.AUTHENTICATION_BEARER_TOKEN;
+import static com.epam.esm.utils.AuthConstants.*;
 
 @RequiredArgsConstructor
 public class ServiceAuthenticationFilter extends OncePerRequestFilter {
@@ -47,18 +47,22 @@ public class ServiceAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authToken);
             filterChain.doFilter(request, response);
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            int statusCode = e.getStatusCode().value();
-            response.setStatus(statusCode);
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.getWriter().write(getJsonProblem(e, statusCode));
+            setException(response, e);
         }
+    }
+
+    private void setException(HttpServletResponse response, HttpStatusCodeException e) throws IOException {
+        int statusCode = e.getStatusCode().value();
+        response.setStatus(statusCode);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write(getJsonProblem(e, statusCode));
     }
 
     public String getJsonProblem(HttpStatusCodeException e, int statusCode) {
         JSONObject errorJson = new JSONObject();
-        errorJson.put("title", "Authentication Exception");
-        errorJson.put("status", statusCode);
-        errorJson.put("detail", e.getStatusText());
+        errorJson.put(TITLE, AUTHENTICATION_EXCEPTION);
+        errorJson.put(STATUS, statusCode);
+        errorJson.put(DETAIL, e.getStatusText());
         return errorJson.toString();
     }
 }
