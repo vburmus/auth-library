@@ -8,11 +8,8 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
+public class AuthenticatedUser {
     private Long id;
-    private String name;
-    private String surname;
-    private String phone;
     private String email;
     private Provider provider;
     private Role role;

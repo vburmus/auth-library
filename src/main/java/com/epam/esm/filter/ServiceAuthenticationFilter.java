@@ -1,7 +1,7 @@
 package com.epam.esm.filter;
 
 
-import com.epam.esm.model.UserDTO;
+import com.epam.esm.model.AuthenticatedUser;
 import com.epam.esm.utils.openfeign.AuthFeignClient;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -40,7 +40,7 @@ public class ServiceAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         try {
-            UserDTO user = authClient.getUserFromJwt(bearerToken).getBody();
+            AuthenticatedUser user = authClient.getAuthenticatedUserFromJwt(bearerToken).getBody();
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(user, null,
                             Collections.singleton(new SimpleGrantedAuthority(user.getRole().name())));

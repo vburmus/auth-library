@@ -1,7 +1,7 @@
 package com.epam.esm.filter;
 
 import com.epam.esm.model.Role;
-import com.epam.esm.model.UserDTO;
+import com.epam.esm.model.AuthenticatedUser;
 import com.epam.esm.utils.openfeign.AuthFeignClient;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -57,17 +57,17 @@ class ServiceAuthenticationFilterTest {
 
     @Test
     void testFilterValidBearerTokenSuccessfulAuthentication() throws ServletException, IOException {
-        String validToken = "Bearer BearerValidToken"; // Replace with a valid token format
+        String validToken = "Bearer BearerValidToken";
         when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(validToken);
 
-        UserDTO userDTO = new UserDTO();
+        AuthenticatedUser userDTO = new AuthenticatedUser();
         userDTO.setRole(Role.USER);
-        when(authClient.getUserFromJwt(validToken)).thenReturn(ResponseEntity.ok(userDTO));
+        when(authClient.getAuthenticatedUserFromJwt(validToken)).thenReturn(ResponseEntity.ok(userDTO));
 
         authenticationFilter.doFilterInternal(request, response, filterChain);
 
         assertEquals(userDTO, SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        UserDTO authUser = (UserDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        AuthenticatedUser authUser = (AuthenticatedUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         assertEquals(Role.USER, authUser.getRole());
         verify(filterChain).doFilter(request, response);
     }
@@ -77,7 +77,7 @@ class ServiceAuthenticationFilterTest {
         String validToken = "Bearer BearerValidToken";
         when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(validToken);
 
-        when(authClient.getUserFromJwt(validToken))
+        when(authClient.getAuthenticatedUserFromJwt(validToken))
                 .thenThrow(new HttpClientErrorException(HttpStatus.UNAUTHORIZED));
 
         PrintWriter writer = mock(PrintWriter.class);
@@ -92,10 +92,10 @@ class ServiceAuthenticationFilterTest {
 
     @Test
     void testFilterAuthenticationErrorHttpServerErrorException() throws ServletException, IOException {
-        String validToken = "Bearer BearerValidToken"; // Replace with a valid token format
+        String validToken = "Bearer BearerValidToken";
         when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(validToken);
 
-        when(authClient.getUserFromJwt(validToken))
+        when(authClient.getAuthenticatedUserFromJwt(validToken))
                 .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR));
 
         PrintWriter writer = mock(PrintWriter.class);
